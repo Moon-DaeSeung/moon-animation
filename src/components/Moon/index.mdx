@@ -1,0 +1,36 @@
+---
+name: Moon 
+menu: Components
+---
+
+import Moon from './Moon'
+import { Playground, Props } from 'docz'
+
+# Spring 
+
+<Playground>
+  {
+    <Moon
+      configs={{
+        x: {
+          initial: { displacement: 200, velocity: 0 },
+          equation: ({ displacement }) => -2 * displacement
+        }
+      }}
+    >
+      {({ x }) => {
+        return (
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'solid 2px', width: '500px', height: '80px'
+          }}
+        >
+          <div style={{position: 'relative', left: x + 'px', backgroundColor: 'lightBlue', width: '50px', height: '50px', borderRadius: '9999px'}}/>
+        </div>
+        )
+      }}
+    </Moon>
+  }
+</Playground>
+
+### Moon Props
+<Props of={Moon} />

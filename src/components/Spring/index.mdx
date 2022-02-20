@@ -1,0 +1,28 @@
+---
+name: Spring
+menu: Components
+---
+
+import Spring from './Spring'
+import { Playground, Props } from 'docz'
+
+# Spring 
+
+<Playground>
+  {
+    <Spring values={{ x: { from: 200, to: 0 } }}>
+      {({ x }) =>
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'solid 2px', width: '500px', height: '80px'
+          }}
+        >
+          <div style={{position: 'relative', left: x + 'px', backgroundColor: 'lightBlue', width: '50px', height: '50px', borderRadius: '9999px'}}/>
+        </div>
+      }
+    </Spring>
+  }
+</Playground>
+
+### Properties
+
+<Props of={Spring} />
