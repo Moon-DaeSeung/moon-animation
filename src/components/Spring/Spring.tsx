@@ -31,7 +31,7 @@ const Spring = <T, _>({ config, values, children }: SpringProps<T>) => {
       equation: ({ displacement, velocity }) =>
         (-1 * tention * (displacement - to)) - (friction * 1 * velocity),
       initial: {
-        displacement: from, velocity: (to < from ? -1 : 1) * 700
+        displacement: from, velocity: (to - from) * 3.5
       }
     })
   ), [])
