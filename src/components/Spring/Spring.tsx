@@ -6,41 +6,52 @@ import { SpringApi } from '../../hooks/useSpringRef'
 
 export type SpringProps<T> = {
   springRef: SpringApi<T>
-  children: (values: {
-    [key in keyof T]: number
-  }) => React.ReactElement;
+  children: (value: SpringValue<T>) => React.ReactElement;
+}
+
+type SpringValue<T> = {
+  [key in keyof T]: number
 }
 
 const Spring = <T, _>({ springRef, children }: SpringProps<T>) => {
+  const [TENSION, FRICTION] = [10, 6]
   const [controller, setController] = useState<Controller>()
   const [moveInfos, setMoveInfos] = useState<MoveInfos<T>>()
-  const tention = 10
-  const friction = 6
-  const config = springRef.config
-  const moonConfigs = useMemo(() => transform<typeof config, MoonConfig>(springRef.config, ({ from, to }) =>
-    ({
-      equation: ({ displacement, velocity }) =>
-        (-1 * tention * (displacement - to)) - (friction * 1 * velocity),
-      initial: {
-        displacement: from, velocity: (to - from) * 3.5
-      }
-    })
-  ), [springRef])
+  const [toInfos, setToInfos] = useState<SpringValue<T>>()
+  const [moonConfigs, setMoonConfigs] = useState(() => convertSpringToMoon(springRef.config))
+  const convertSpringToMoon = (configs: typeof springRef.config) =>
+    transform<typeof configs, MoonConfig>(configs, ({ from, to }) =>
+      ({
+        equation: ({ displacement, velocity }) =>
+          (-1 * TENSION * (displacement - to)) - (FRICTION * 1 * velocity),
+        moveInfo: {
+          displacement: from, velocity: (to - from) * 3.5
+        }
+      })
+    )
 
   useEffect(() => {
-    if (!controller || !moveInfos) return
+    setMoonConfigs(convertSpringToMoon(springRef.config))
+    setToInfos(transform<typeof springRef.config, number>(springRef.config, ({ to }) => to))
+  }, [springRef])
+
+  useEffect(() => {
+    if (!controller || !moveInfos || !toInfos) return
     const { cancle } = controller
     for (const key in moveInfos) {
       const { displacement, velocity } = moveInfos[key]
-      const { to } = config[key]
+      const to = toInfos[key]
       if (Math.abs(displacement - to) > 0.1 || Math.abs(velocity) > 10) return
     }
     cancle()
-  }, [moveInfos, controller, springRef])
+  }, [moveInfos, controller, springRef, toInfos])
 
   useEffect(() => {
-    console.log('hi')
-  }, [springRef])
+    if (!controller) return
+    springRef.stop = controller.cancle
+    springRef.start = controller.start
+    springRef.update = setToInfos
+  }, [springRef, controller])
 
   return (
     <Moon configs={moonConfigs} controllerRef={setController} moveInfosRef={setMoveInfos}>

@@ -1,7 +1,7 @@
 import { Equation, MoveInfo } from '../../libs/NumericalAnalyzer'
 
 export type MoonConfig = {
-  initial: MoveInfo;
+  moveInfo: MoveInfo;
   equation: Equation;
 };
 

@@ -8,10 +8,12 @@ export const useSpringRef = <T, >(config: Config<T>) => {
 export class SpringApi<T> {
   update: (to: { [key in keyof T]: number}) => void
   stop: () => void
+  start: () => void
   config: InternalConfig<T>
   constructor (config: Config<T>) {
     this.update = (_: { [key in keyof T]: number}) => {}
     this.stop = () => {}
+    this.start = () => {}
     this.config = this.resolve(config)
   }
 

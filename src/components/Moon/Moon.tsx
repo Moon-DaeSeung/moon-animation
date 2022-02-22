@@ -13,16 +13,16 @@ export type MoonProps<T> = {
 
 const Moon = <T, >({ children, configs, controllerRef, moveInfosRef }: MoonProps<T>) => {
   const [moveInfos, setMoveInfos] = useState<MoveInfos<T>>(() =>
-    transform(configs, ({ initial }) => initial)
+    transform(configs, ({ moveInfo: initial }) => initial)
   )
 
-  const moves = useMemo(() =>
-    transform(configs, ({ equation, initial }) => NumericalAnalyzer(equation, initial))
+  const analyzers = useMemo(() =>
+    transform(configs, ({ equation, moveInfo: initial }) => new NumericalAnalyzer(equation, initial))
   , [configs])
 
   const hook = useCallback((dt: number) => {
-    setMoveInfos(transform(moves, move => move(dt)))
-  }, [moves])
+    setMoveInfos(transform(analyzers, analyzer => analyzer.move(dt)))
+  }, [analyzers])
 
   const controller = useMemo(() => FrameLoop(hook), [hook])
 

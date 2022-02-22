@@ -4,19 +4,22 @@ export type MoveInfo = {
   velocity: number
 }
 
-export const NumericalAnalyzer = (equation: Equation, initialInfo: MoveInfo) => {
-  let moveInfo: MoveInfo = initialInfo
+export class NumericalAnalyzer {
+  moveInfo: MoveInfo
+  equation: Equation
+  constructor (equation: Equation, moveInfo: MoveInfo) {
+    this.equation = equation
+    this.moveInfo = moveInfo
+  }
 
-  const move = (dt: number) => {
-    const { velocity, displacement } = moveInfo
-    const acceleration = equation(moveInfo)
+  move (dt: number) {
+    const { velocity, displacement } = this.moveInfo
+    const acceleration = this.equation(this.moveInfo)
     // 수치해석학 보고 더 나은 근사법 찾을 예정
-    moveInfo = {
+    this.moveInfo = {
       velocity: velocity + acceleration * dt,
       displacement: displacement + velocity * dt
     }
-    return moveInfo
+    return this.moveInfo
   }
-
-  return move
 }
