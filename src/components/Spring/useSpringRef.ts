@@ -1,8 +1,8 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 
 export const useSpringRef = <T, >(config: Config<T>) => {
-  const apiRef = useRef(() => new SpringApi(config))
-  return apiRef.current
+  const [api] = useState(() => new SpringApi(config))
+  return api
 }
 
 export class SpringApi<T> {

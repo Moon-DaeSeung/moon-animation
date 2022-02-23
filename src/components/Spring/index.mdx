@@ -4,24 +4,35 @@ menu: Components
 ---
 
 import Spring from './Spring'
+import { useSpringRef } from './useSpringRef'
 import { Playground, Props } from 'docz'
+import {useState} from 'react'
 
 # Spring 
 
 <Playground>
   {
     () => {
-      return (
-        <Spring values={{ x: { from: 200, to: 0 } }}>
-          {({ x }) =>
-            <div style={{
-              display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'solid 2px', width: '500px', height: '80px'
-              }}
-            >
-              <div style={{position: 'relative', left: x + 'px', backgroundColor: 'lightBlue', width: '50px', height: '50px', borderRadius: '9999px'}}/>
-            </div>
-          }
-        </Spring>
+      const springRef = useSpringRef({from: {x: 200}, to: {x: 0}}) 
+      const [toggle, setToggle] = useState(false)
+      const handleClick = () => {
+        springRef.update({x: !toggle ? 200 : 0 })
+        setToggle(!toggle)
+      }
+      return(
+        <>
+          <button onClick={handleClick} style={{padding: '5px', backgroundColor: 'blue'}}>move</button>
+          <Spring springRef={springRef}>
+            {({ x }) =>
+              <div style={{
+                display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'solid 2px', width: '500px', height: '80px'
+                }}
+              >
+                <div style={{position: 'relative', left: x + 'px', backgroundColor: 'lightBlue', width: '50px', height: '50px', borderRadius: '9999px'}}/>
+              </div>
+            }
+          </Spring>
+        </>
       )
     }
   }
