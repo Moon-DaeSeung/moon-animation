@@ -9,13 +9,14 @@ type ConfigFn<T> = (index: number) => { [key in keyof T]: AnalyzerConfig }
 export type MoonsProps<T, R> = {
   config: ConfigFn<T>
   items: R[]
+  resetOnConfigChanged?: boolean
   getItemId: (item: R) => string | number
   children: (item: R, value: { [key in keyof T]: number}, index: number) => React.ReactElement
   controllerRef?: (controller: Controller) => void
   moonValuesRef? :(moonValues: MoonValue<T>[]) => void
 }
 
-const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef }: MoonsProps<T, R>) => {
+const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef, resetOnConfigChanged }: MoonsProps<T, R>) => {
   const internalControllRef = useRef<Controller>()
   const [moonValues, setMoonValues] = useState<MoonValue<T>[]>([])
   const [prevItems, prevConfigFn, prevMoonValues] = [usePrev(items), usePrev(configFn), usePrev(moonValues)]
@@ -35,7 +36,8 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
   }
 
   useLayoutEffect(() => {
-    if (!isItemOrderChanged(items, prevItems) && !isConfigFnChanged(configFn, prevConfigFn)) return
+    const [itemOrderChagned, configFnChanged] = [isItemOrderChanged(items, prevItems), isConfigFnChanged(configFn, prevConfigFn)]
+    if (!itemOrderChagned && !configFnChanged) return
     const configs = Array.from({ length: items.length }, (_, index) => configFn(index))
     const itemOrders = items.map(item => {
       return prevItems ? prevItems.findIndex(prevItem => getItemId(prevItem) === getItemId(item)) : -1
@@ -45,7 +47,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
       for (const key in config) {
         const { initial, equation } = config[key]
         const itemOrder = itemOrders[index]
-        const moveInfo = itemOrder === -1 ? initial : moonValues[itemOrder][key]
+        const moveInfo = (itemOrder === -1 || (configFnChanged && resetOnConfigChanged)) ? initial : moonValues[itemOrder][key]
         analyzer[key] = new NumericalAnalyzer(equation, moveInfo)
       }
       return analyzer
