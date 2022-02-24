@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export const useSpringsApi = <T, >(config: (index: number) => Config<T>) => {
+export const useSpringsApi = <T, >(config: (index: number) => SpringConfig<T>) => {
   const [api] = useState(() => new SpringsApi(config))
   return api
 }
@@ -9,17 +9,17 @@ export class SpringsApi<T> {
   update: (updateFn: (index: number) => SpringValue<T>) => void
   stop: () => void
   start: () => void
-  config: (index: number) => SpringConfig<T>
-  constructor (configFn: (index: number) => Config<T>) {
+  config: (index: number) => SpringInternalConfig<T>
+  constructor (configFn: (index: number) => SpringConfig<T>) {
     this.update = (_: (index: number) => SpringValue<T>) => {}
     this.stop = () => {}
     this.start = () => {}
     this.config = (index: number) => this.resolve(configFn(index))
   }
 
-  private resolve (config: Config<T>): SpringConfig<T> {
+  private resolve (config: SpringConfig<T>): SpringInternalConfig<T> {
     const { to, from } = config
-    const internalConfig = {} as SpringConfig<T>
+    const internalConfig = {} as SpringInternalConfig<T>
     for (const key in to) {
       if (from === undefined || from[key] === undefined) {
         internalConfig[key] = { from: to[key], to: to[key] }
@@ -30,7 +30,7 @@ export class SpringsApi<T> {
     return internalConfig
   }
 }
-export type SpringConfig<T> = {
+export type SpringInternalConfig<T> = {
     [key in keyof T]: {
       from: number,
       to: number
@@ -41,7 +41,7 @@ export type SpringValue<T> = {
   [key in keyof T]: number
 }
 
-type Config<T> = {
+export type SpringConfig<T> = {
   from?: {
     [key in keyof T]?: number
   }

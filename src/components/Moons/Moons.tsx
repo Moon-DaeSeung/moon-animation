@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { FrameLoop } from '../../libs/FrameLoop'
 import { NumericalAnalyzer } from '../../libs/NumericalAnalyzer'
@@ -32,7 +33,8 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
   const isConfigFnChanged = (current: ConfigFn<T>, prev?: ConfigFn<T>) => {
     if (!prev) return true
     if (prev === current) return false
-    return prev.toString() !== current.toString()
+    const createConfigs = (fn: ConfigFn<T>) => Array.from({ length: items.length }, (_, index) => fn(index))
+    return !isEqual(createConfigs(prev), createConfigs(current))
   }
 
   useLayoutEffect(() => {

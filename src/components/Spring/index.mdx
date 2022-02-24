@@ -4,7 +4,7 @@ menu: Components
 ---
 
 import Spring from './Spring'
-import { useSpringRef } from './useSpringRef'
+import { useSpringApi } from './useSpringApi'
 import { Playground, Props } from 'docz'
 import {useState} from 'react'
 
@@ -13,16 +13,16 @@ import {useState} from 'react'
 <Playground>
   {
     () => {
-      const springRef = useSpringRef({from: {x: 200}, to: {x: 0}}) 
+      const springApi = useSpringApi({from: {x: 200}, to: {x: 0}}) 
       const [toggle, setToggle] = useState(false)
       const handleClick = () => {
-        springRef.update({x: !toggle ? 200 : 0 })
+        springApi.update({x: !toggle ? 200 : 0 })
         setToggle(!toggle)
       }
       return(
         <>
           <button onClick={handleClick} style={{padding: '5px', backgroundColor: 'blue'}}>move</button>
-          <Spring springRef={springRef}>
+          <Spring springApi={springApi}>
             {({ x }) =>
               <div style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'solid 2px', width: '500px', height: '80px'

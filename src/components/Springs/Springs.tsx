@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Moons from '../Moons/Moons'
 import { transform } from '../../libs/transform'
 import { Controller, AnalyzerConfig, MoonValue } from '../Moon/types'
@@ -35,12 +35,13 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
     }
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isFirstUpdatedRef.current) {
-      isFirstUpdatedRef.current = true; return
+      isFirstUpdatedRef.current = false; return
     }
-    const configFn = (index: number) => {
-      const [fromValue, toValue] = [moonValuesRef.current[index], toValueFn(index)]
+    const configFn = function (index: number) {
+      const toValue = toValueFn(index)
+      const fromValue = moonValuesRef.current[index]
       const configs = {} as {[key in keyof T]: AnalyzerConfig}
       for (const key in toValue) {
         const to = toValue[key]
@@ -49,14 +50,14 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
       }
       return configs
     }
-    setMoonConfigFn(configFn)
+    setMoonConfigFn(() => configFn)
   }, [toValueFn])
 
   useEffect(() => {
     if (!controller) return
     springsApi.stop = controller.cancle
     springsApi.start = controller.start
-    springsApi.update = setToValueFn
+    springsApi.update = (valueFn) => setToValueFn(() => valueFn)
   }, [springsApi, controller])
 
   return (
