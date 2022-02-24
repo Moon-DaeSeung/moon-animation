@@ -11,9 +11,9 @@ import { Playground, Props } from 'docz'
 <Playground>
   {
     <Moon
-      configs={{
+      config={{
         x: {
-          moveInfo: { displacement: 200, velocity: 0 },
+          initial : { displacement: 200, velocity: 0 },
           equation: ({ displacement }) => -2 * displacement
         }
       }}

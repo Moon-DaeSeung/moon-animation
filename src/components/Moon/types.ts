@@ -1,11 +1,11 @@
 import { Equation, MoveInfo } from '../../libs/NumericalAnalyzer'
 
-export type MoonConfig = {
-  moveInfo: MoveInfo;
+export type AnalyzerConfig = {
+  initial: MoveInfo;
   equation: Equation;
 };
 
-export type MoveInfos<T> = {
+export type MoonValue<T> = {
   [key in keyof T]: MoveInfo
 }
 

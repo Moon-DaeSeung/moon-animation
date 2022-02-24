@@ -1,0 +1,50 @@
+---
+name: Moons 
+menu: Components
+---
+
+import Moons from './Moons'
+import { Playground, Props } from 'docz'
+import {useState} from 'react'
+
+# Spring 
+
+<Playground>
+  {
+    () => {
+      const [items, setItems] = useState([
+        {id: 1, color: 'red'},
+        {id: 2, color: 'blue'}
+      ])
+      const handleClick = () => setItems([...items].reverse())
+      return (
+        <>
+          <button style={{paddig: '10px'}} onClick={handleClick}>reverse</button>
+          <div 
+            style={{
+                position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'solid 2px', width: '500px', height: '80px'
+            }}
+          >
+            <Moons
+              items={items}
+              config={(index) => ({
+                x: {
+                  initial : { displacement: index === 0 ? 200 : -200, velocity: 0 },
+                  equation: ({ displacement, velocity }) => -2 * (displacement- (index === 0 ? 150 : -150)) - 1 * velocity
+                }
+              })}
+              getItemId={({id}) => id}
+            >
+              {({id, color},{ x }) => 
+                <div key={id} style={{position: 'absolute', transform: `translateX(${x}px)`, backgroundColor: color, width: '50px', height: '50px', borderRadius: '9999px'}}/>
+              }
+            </Moons>
+          </div>
+        </>
+      )
+    }
+  }
+</Playground>
+
+### Moon Props
+<Props of={Moons} />

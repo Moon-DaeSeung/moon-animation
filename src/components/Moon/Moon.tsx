@@ -1,27 +1,35 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FrameLoop } from '../../libs/FrameLoop'
-import { Equation, MoveInfo, NumericalAnalyzer } from '../../libs/NumericalAnalyzer'
+import isEqual from '../../libs/isEqual'
+import { NumericalAnalyzer } from '../../libs/NumericalAnalyzer'
 import { transform } from '../../libs/transform'
-import { Controller, MoonConfig, MoveInfos } from './types'
+import { Controller, AnalyzerConfig, MoonValue } from './types'
 
 export type MoonProps<T> = {
-  configs: { [key in keyof T]: MoonConfig }
+  config: { [key in keyof T]: AnalyzerConfig }
   children: (value: { [key in keyof T]: number}) => React.ReactElement
   controllerRef?: (controller: Controller) => void
-  moveInfosRef? :(moveInfos: MoveInfos<T>) => void
+  moveInfosRef? :(moveInfos: MoonValue<T>) => void
 }
 
-const Moon = <T, >({ children, configs, controllerRef, moveInfosRef }: MoonProps<T>) => {
-  const [moveInfos, setMoveInfos] = useState<MoveInfos<T>>(() =>
-    transform(configs, ({ moveInfo: initial }) => initial)
+const Moon = <T, >({ children, config: configProp, controllerRef, moveInfosRef }: MoonProps<T>) => {
+  const [config, setConfig] = useState(configProp)
+
+  useEffect(() => {
+    if (isEqual(config, configProp)) return
+    setConfig(configProp)
+  }, [configProp])
+
+  const [moonValue, setMoonValue] = useState<MoonValue<T>>(() =>
+    transform(config, ({ initial }) => initial)
   )
 
   const analyzers = useMemo(() =>
-    transform(configs, ({ equation, moveInfo: initial }) => new NumericalAnalyzer(equation, initial))
-  , [configs])
+    transform(config, ({ equation, initial }) => new NumericalAnalyzer(equation, initial))
+  , [config])
 
   const hook = useCallback((dt: number) => {
-    setMoveInfos(transform(analyzers, analyzer => analyzer.move(dt)))
+    setMoonValue(transform(analyzers, analyzer => analyzer.move(dt)))
   }, [analyzers])
 
   const controller = useMemo(() => FrameLoop(hook), [hook])
@@ -34,10 +42,10 @@ const Moon = <T, >({ children, configs, controllerRef, moveInfosRef }: MoonProps
   }, [controller])
 
   useEffect(() => {
-    moveInfosRef && moveInfosRef(moveInfos)
-  }, [moveInfos])
+    moveInfosRef && moveInfosRef(moonValue)
+  }, [moonValue])
 
-  return children(transform(moveInfos, ({ displacement }) => displacement))
+  return children(transform(moonValue, ({ displacement }) => displacement))
 }
 
 export default Moon

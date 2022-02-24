@@ -1,7 +1,7 @@
 import React, { Children, useCallback, useEffect, useMemo, useState } from 'react'
 import Moon from '../Moon/Moon'
 import { transform } from '../../libs/transform'
-import { Controller, MoonConfig, MoveInfos } from '../Moon/types'
+import { Controller, AnalyzerConfig, MoonValue } from '../Moon/types'
 import { SpringApi } from './useSpringRef'
 import { MoveInfo } from '../../libs/NumericalAnalyzer'
 
@@ -17,19 +17,19 @@ type SpringValue<T> = {
 const Spring = <T, _>({ springRef, children }: SpringProps<T>) => {
   const [TENSION, FRICTION] = [10, 6]
   const [controller, setController] = useState<Controller>()
-  const [moveInfos, setMoveInfos] = useState<MoveInfos<T>>()
+  const [moveInfos, setMoveInfos] = useState<MoonValue<T>>()
   const [toInfos, setToInfos] = useState<SpringValue<T>>()
   const [renderedBySpringRefChanged, setRenderdBySpringRefChagned] = useState(false)
-  const [moonConfigs, setMoonConfigs] = useState<{[key in keyof T]: MoonConfig}>()
+  const [moonConfigs, setMoonConfigs] = useState<{[key in keyof T]: AnalyzerConfig}>()
   const createMoonCofing = (from: number, to: number) => ({
     equation: ({ displacement, velocity }: MoveInfo) =>
       (-1 * TENSION * (displacement - to)) - (FRICTION * 1 * velocity),
-    moveInfo: {
+    initial: {
       displacement: from, velocity: (to - from) * 3.5
     }
   })
   const convertSpringToMoon = (configs: typeof springRef.config) =>
-    transform<typeof configs, MoonConfig>(configs, ({ from, to }) =>
+    transform<typeof configs, AnalyzerConfig>(configs, ({ from, to }) =>
       createMoonCofing(from, to)
     )
 
@@ -41,7 +41,7 @@ const Spring = <T, _>({ springRef, children }: SpringProps<T>) => {
 
   useEffect(() => {
     if (!toInfos || !moveInfos || renderedBySpringRefChanged) return
-    const configs = {} as {[key in keyof T]: MoonConfig}
+    const configs = {} as {[key in keyof T]: AnalyzerConfig}
     for (const key in toInfos) {
       const to = toInfos[key]
       const { displacement: from } = moveInfos[key]
@@ -73,7 +73,7 @@ const Spring = <T, _>({ springRef, children }: SpringProps<T>) => {
 
   return (
     moonConfigs
-      ? <Moon configs={moonConfigs} controllerRef={setController} moveInfosRef={setMoveInfos}>
+      ? <Moon config={moonConfigs} controllerRef={setController} moveInfosRef={setMoveInfos}>
       {children}
     </Moon>
       : <div/>
