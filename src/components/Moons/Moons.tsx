@@ -1,6 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { FrameLoop } from '../../libs/FrameLoop'
-import isEqual from '../../libs/isEqual'
 import { NumericalAnalyzer } from '../../libs/NumericalAnalyzer'
 import { transform } from '../../libs/transform'
 import { usePrev } from '../../libs/usePrev'
@@ -79,8 +78,17 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     internalController.cancle()
   }, [moonValues])
 
-  return items.map((item, index) =>
-    children(item, transform(moonValues[index], ({ displacement }) => displacement), index))
+  return (
+    <>
+      {
+        items.map((item, index) =>
+          React.cloneElement(
+            children(item, transform(moonValues[index], ({ displacement }) => displacement), index)
+            , { key: getItemId(item) })
+        )
+      }
+    </>
+  )
 }
 
 export default Moons

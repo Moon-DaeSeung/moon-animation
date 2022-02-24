@@ -73,7 +73,7 @@ const Spring = <T, _>({ springRef, children }: SpringProps<T>) => {
 
   return (
     moonConfigs
-      ? <Moon config={moonConfigs} controllerRef={setController} moveInfosRef={setMoveInfos}>
+      ? <Moon config={moonConfigs} controllerRef={setController} moonValueRef={setMoveInfos}>
       {children}
     </Moon>
       : <div/>
