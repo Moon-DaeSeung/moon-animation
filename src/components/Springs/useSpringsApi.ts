@@ -7,14 +7,28 @@ export const useSpringsApi = <T, >(config: (index: number) => SpringConfig<T>) =
 
 export class SpringsApi<T> {
   update: (updateFn: (index: number) => SpringValue<T>) => void
-  stop: () => void
-  start: () => void
+  _stop: () => void
+  _start: () => void
   config: (index: number) => SpringInternalConfig<T>
+  onRest: () => void
+  onStart: () => void
   constructor (configFn: (index: number) => SpringConfig<T>) {
     this.update = (_: (index: number) => SpringValue<T>) => {}
-    this.stop = () => {}
-    this.start = () => {}
+    this._stop = () => {}
+    this._start = () => {}
+    this.onRest = () => {}
+    this.onStart = () => {}
     this.config = (index: number) => this.resolve(configFn(index))
+  }
+
+  stop () {
+    this._stop()
+    this.onRest()
+  }
+
+  start () {
+    this._start()
+    this.onStart()
   }
 
   private resolve (config: SpringConfig<T>): SpringInternalConfig<T> {

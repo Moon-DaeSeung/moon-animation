@@ -18,10 +18,10 @@ export class SpringApi<T> {
   }
 
   stop () {
-    this.springsApi.stop()
+    this.springsApi._stop()
   }
 
   start () {
-    this.springsApi.start()
+    this.springsApi._start()
   }
 }

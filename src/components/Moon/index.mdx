@@ -14,7 +14,7 @@ import { Playground, Props } from 'docz'
       config={{
         x: {
           initial : { displacement: 200, velocity: 0 },
-          equation: ({ displacement }) => -2 * displacement
+          equation: ({ displacement, velocity }) => -10 * displacement  - 6 * velocity
         }
       }}
     >

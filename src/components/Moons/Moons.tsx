@@ -13,11 +13,14 @@ export type MoonsProps<T, R> = {
   resetOnConfigChanged?: boolean
   getItemId: (item: R) => string | number
   children: (item: R, value: { [key in keyof T]: number}, index: number) => React.ReactElement
+  onRest?: () => void
+  onStart?: () => void
   controllerRef?: (controller: Controller) => void
   moonValuesRef? :(moonValues: MoonValue<T>[]) => void
+  depths?: any[]
 }
 
-const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef, resetOnConfigChanged }: MoonsProps<T, R>) => {
+const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef, resetOnConfigChanged, onRest, onStart, depths }: MoonsProps<T, R>) => {
   const internalControllRef = useRef<Controller>()
   const [moonValues, setMoonValues] = useState<MoonValue<T>[]>([])
   const [prevItems, prevConfigFn, prevMoonValues] = [usePrev(items), usePrev(configFn), usePrev(moonValues)]
@@ -64,8 +67,9 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     controllerRef && controllerRef(controller)
     internalControllRef.current = controller
     start()
+    onStart && onStart()
     return () => cancle()
-  }, [configFn, items])
+  }, [depths ? [...depths] : configFn, items])
 
   useEffect(() => {
     moonValuesRef && moonValuesRef(moonValues)
@@ -80,6 +84,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
       }
     }
     internalController.cancle()
+    onRest && onRest()
   }, [moonValues])
 
   return (

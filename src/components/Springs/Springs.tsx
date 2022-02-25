@@ -13,7 +13,7 @@ export type SpringsProps<T, R> = {
 }
 
 const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<T, R>) => {
-  const [TENSION, FRICTION] = [10, 6]
+  const [TENSION, FRICTION] = [22, 9]
   const [controller, setController] = useState<Controller>()
   const moonValuesRef = useRef<MoonValue<T>[]>([])
   const isFirstUpdatedRef = useRef(true)
@@ -55,8 +55,8 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
 
   useEffect(() => {
     if (!controller) return
-    springsApi.stop = controller.cancle
-    springsApi.start = controller.start
+    springsApi._stop = controller.cancle
+    springsApi._start = controller.start
     springsApi.update = (valueFn) => setToValueFn(() => valueFn)
   }, [springsApi, controller])
 
@@ -66,6 +66,8 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
       config={moonConfigFn}
       resetOnConfigChanged
       items={items}
+      onRest={springsApi.onRest}
+      onStart={springsApi.onStart}
       controllerRef={setController}
       moonValuesRef={(moonValues) => { moonValuesRef.current = moonValues }}>
       {children}
