@@ -10,7 +10,7 @@ export type TransitionProps<T> = {
   customCss?: any
   getItemId: (item: T) => string | number
   items: T[],
-  depths: any[]
+  depths?: any[]
 }
 
 type XY = [number, number]
@@ -62,7 +62,7 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
         }
       })))
     }
-  }, depths || [renderFn])
+  }, depths ? [...depths] : [renderFn])
   return (
     <>
       <div ref={containerRef} style={!isAnimating ? style : { ...style, visibility: 'hidden' }} css={customCss}>

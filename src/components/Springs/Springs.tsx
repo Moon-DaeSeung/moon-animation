@@ -13,7 +13,7 @@ export type SpringsProps<T, R> = {
 }
 
 const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<T, R>) => {
-  const [TENSION, FRICTION] = [22, 9]
+  const [TENSION, FRICTION] = [30, 10]
   const [controller, setController] = useState<Controller>()
   const moonValuesRef = useRef<MoonValue<T>[]>([])
   const isFirstUpdatedRef = useRef(true)
@@ -30,7 +30,7 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
       equation: ({ displacement, velocity }: MoveInfo) =>
         (-1 * TENSION * (displacement - to)) - (FRICTION * 1 * velocity),
       initial: {
-        displacement: from, velocity: (to - from) * 3.5
+        displacement: from, velocity: 0
       }
     }
   )
@@ -64,7 +64,7 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
     <Moons
       getItemId={getItemId}
       config={moonConfigFn}
-      resetOnConfigChanged
+      depths={[moonConfigFn]}
       items={items}
       onRest={springsApi.onRest}
       onStart={springsApi.onStart}

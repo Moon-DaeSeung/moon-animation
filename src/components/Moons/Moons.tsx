@@ -10,7 +10,6 @@ type ConfigFn<T> = (index: number) => { [key in keyof T]: AnalyzerConfig }
 export type MoonsProps<T, R> = {
   config: ConfigFn<T>
   items: R[]
-  resetOnConfigChanged?: boolean
   getItemId: (item: R) => string | number
   children: (item: R, value: { [key in keyof T]: number}, index: number) => React.ReactElement
   onRest?: () => void
@@ -20,7 +19,7 @@ export type MoonsProps<T, R> = {
   depths?: any[]
 }
 
-const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef, resetOnConfigChanged, onRest, onStart, depths }: MoonsProps<T, R>) => {
+const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef, onRest, onStart, depths }: MoonsProps<T, R>) => {
   const internalControllRef = useRef<Controller>()
   const [moonValues, setMoonValues] = useState<MoonValue<T>[]>([])
   const [prevItems, prevConfigFn, prevMoonValues] = [usePrev(items), usePrev(configFn), usePrev(moonValues)]
@@ -41,8 +40,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
   }
 
   useLayoutEffect(() => {
-    const [itemOrderChagned, configFnChanged] = [isItemOrderChanged(items, prevItems), isConfigFnChanged(configFn, prevConfigFn)]
-    if (!itemOrderChagned && !configFnChanged) return
+    if (!isItemOrderChanged(items, prevItems) && !(depths ? true : isConfigFnChanged(configFn, prevConfigFn))) return
     const configs = Array.from({ length: items.length }, (_, index) => configFn(index))
     const itemOrders = items.map(item => {
       return prevItems ? prevItems.findIndex(prevItem => getItemId(prevItem) === getItemId(item)) : -1
@@ -52,7 +50,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
       for (const key in config) {
         const { initial, equation } = config[key]
         const itemOrder = itemOrders[index]
-        const moveInfo = (itemOrder === -1 || (configFnChanged && resetOnConfigChanged)) ? initial : moonValues[itemOrder][key]
+        const moveInfo = itemOrder === -1 ? initial : moonValues[itemOrder][key]
         analyzer[key] = new NumericalAnalyzer(equation, moveInfo)
       }
       return analyzer
@@ -69,7 +67,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     start()
     onStart && onStart()
     return () => cancle()
-  }, [depths ? [...depths] : configFn, items])
+  }, depths ? [items, ...depths] : [items, configFn])
 
   useEffect(() => {
     moonValuesRef && moonValuesRef(moonValues)
@@ -80,7 +78,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
       for (const key in moonValue) {
         const { displacement, velocity } = moonValue[key]
         const { displacement: prevDisplacement } = prevMoonValue[key]
-        if (Math.abs(displacement - prevDisplacement) > 0.001 || Math.abs(velocity) > 0.01) return
+        if (Math.abs(displacement - prevDisplacement) > 0.01 || Math.abs(velocity) > 1) return
       }
     }
     internalController.cancle()

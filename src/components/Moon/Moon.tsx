@@ -7,15 +7,21 @@ export type MoonProps<T> = {
   children: (value: { [key in keyof T]: number}) => React.ReactElement
   controllerRef?: (controller: Controller) => void
   moonValueRef? :(moonValue: MoonValue<T>) => void
+  onRest?: () => void
+  onStart?: () => void
+  depths?: any[]
 }
 
-const Moon = <T, >({ children, config, controllerRef, moonValueRef }: MoonProps<T>) => {
+const Moon = <T, >({ children, config, controllerRef, moonValueRef, onRest, onStart, depths }: MoonProps<T>) => {
   const items = useMemo<any>(() => ['dummy'], [])
   return (
     <Moons
       items={items}
       getItemId={() => ''}
       config={() => config}
+      depths={depths}
+      onRest={onRest}
+      onStart={onStart}
       controllerRef={controllerRef}
       moonValuesRef={moonValueRef && ((moonValues: MoonValue<T>[]) => moonValues[0] && moonValueRef(moonValues[0]))}
     >
