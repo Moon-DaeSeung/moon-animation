@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState, CSSProperties } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState, CSSProperties, useMemo } from 'react'
 import tw from 'twin.macro'
 import isEqual from '../../libs/isEqual'
 import Springs from '../Springs'
@@ -17,13 +17,10 @@ type XY = [number, number]
 
 const Transition = <T, >({ children: renderFn, style, getItemId, items, customCss, depths }: TransitionProps<T>) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const childrenArray = items.map((value, i) => {
-    return React.cloneElement(renderFn(value, i), { ref: (node: any) => { childrenRef.current[i] = node } })
-  })
-  const childrenRef = useRef<(HTMLElement | null)[]>(Array.from({ length: items.length }, () => null))
+  const childrenRef = useRef<(HTMLElement | null)[]>([])
   const prevChildrenXYRef = useRef<XY[]>()
   const [isAnimating, setIsAnimating] = useState(false)
-  const [springsApi, setSpringsApi] = useState<SpringsApi<{opacity: number, x: number, y: number}>>()
+  const [springsApi, setSpringsApi] = useState<SpringsApi<{x: number, y: number}>>()
 
   useEffect(() => {
     if (!springsApi) return
@@ -44,6 +41,7 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
 
     const childrenRects = childrenRef.current.filter(child => child !== null)
       .map(child => (child as HTMLElement).getBoundingClientRect())
+    console.log(childrenRects.length)
 
     const childrenXY = childrenRects.map(({ top, bottom, left, right }) => {
       const [childrenX, childrenY] = [(left + right) / 2, (top + bottom) / 2]
@@ -54,19 +52,21 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
     prevChildrenXYRef.current = childrenXY
 
     if (springsApi) {
-      springsApi.update((index: number) => ({ x: childrenXY[index][0], y: childrenXY[index][1], opacity: 1 }))
+      springsApi.update((index: number) => ({ y: childrenXY[index][1], x: childrenXY[index][0] }))
     } else {
       setSpringsApi(new SpringsApi((index: number) => ({
         to: {
-          opacity: 1, x: childrenXY[index][0], y: childrenXY[index][1]
+          y: childrenXY[index][1], x: childrenXY[index][0]
         }
       })))
     }
-  }, depths ? [...depths] : [renderFn])
+  }, depths ? [...depths, items.length] : [renderFn, items.length])
   return (
     <>
       <div ref={containerRef} style={!isAnimating ? style : { ...style, visibility: 'hidden' }} css={customCss}>
-        {childrenArray}
+        {items.map((value, i) =>
+          React.cloneElement(renderFn(value, i), { ref: (node: any) => { childrenRef.current[i] = node } })
+        )}
       </div>
       <div css={[tw`absolute invisible`, isAnimating && tw`visible`]}>
         {(springsApi) && <Springs
@@ -74,8 +74,8 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
           items={items}
           getItemId={getItemId}
         >
-          {(item, { x, y, opacity }, index) => {
-            return <div style={{ position: 'absolute', transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`, opacity }}>
+          {(item, { x, y }, index) => {
+            return <div style={{ position: 'absolute', transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}>
               {renderFn(item, index)}
             </div>
           }}
