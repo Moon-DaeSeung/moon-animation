@@ -21,10 +21,10 @@ export type MoonsProps<T, R> = {
 
 const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerRef, moonValuesRef, onRest, onStart, depths }: MoonsProps<T, R>) => {
   const internalControllRef = useRef<Controller>()
+  const isFirstRendered = useRef(true)
   const [moonValues, setMoonValues] = useState<MoonValue<T>[]>([])
   const [prevItems, prevConfigFn, prevMoonValues] = [usePrev(items), usePrev(configFn), usePrev(moonValues)]
-  const isItemOrderChanged = (current: R[], prev?: R[]) => {
-    if (!prev) return true
+  const isItemOrderChanged = (current: R[], prev: R[]) => {
     if (prev === current) return false
     if (prev.length !== current.length) return true
     for (let index = 0; index < current.length; index++) {
@@ -32,25 +32,26 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     }
     return false
   }
-  const isConfigFnChanged = (current: ConfigFn<T>, prev?: ConfigFn<T>) => {
-    if (!prev) return true
+  const isConfigFnChanged = (current: ConfigFn<T>, prev: ConfigFn<T>) => {
     if (prev === current) return false
     const createConfigs = (fn: ConfigFn<T>) => Array.from({ length: items.length }, (_, index) => fn(index))
     return !isEqual(createConfigs(prev), createConfigs(current))
   }
 
   useLayoutEffect(() => {
-    if (!isItemOrderChanged(items, prevItems) && !(depths ? true : isConfigFnChanged(configFn, prevConfigFn))) return
-    const configs = Array.from({ length: items.length }, (_, index) => configFn(index))
+    if (!isFirstRendered.current && !isItemOrderChanged(items, prevItems) && !(depths ? true : isConfigFnChanged(configFn, prevConfigFn))) {
+      return
+    }
+    const configs = Array.from({ length: prevItems.length }, (_, index) => configFn(index))
     const itemOrders = items.map(item => {
-      return prevItems ? prevItems.findIndex(prevItem => getItemId(prevItem) === getItemId(item)) : -1
+      return !isFirstRendered.current ? prevItems.findIndex(prevItem => getItemId(prevItem) === getItemId(item)) : -1
     })
     const analyzers = configs.map((config, index) => {
       const analyzer = {} as {[key in keyof T]: NumericalAnalyzer}
       for (const key in config) {
         const { initial, equation } = config[key]
         const itemOrder = itemOrders[index]
-        const moveInfo = itemOrder === -1 ? initial : moonValues[itemOrder][key]
+        const moveInfo = moonValues[itemOrder] ? moonValues[itemOrder][key] : initial
         analyzer[key] = new NumericalAnalyzer(equation, moveInfo)
       }
       return analyzer
@@ -66,6 +67,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     internalControllRef.current = controller
     start()
     onStart && onStart()
+    isFirstRendered.current = false
     return () => cancle()
   }, depths ? [items, ...depths] : [items, configFn])
 

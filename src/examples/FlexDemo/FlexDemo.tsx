@@ -8,8 +8,8 @@ const FlexDemo = () => {
   const [nums, setNums] = useState([1, 2, 3, 4])
   const [direction, setDirection] = useState<'row' | 'row-reverse'>('row')
   const handleDirection = () => {
-    setNums(nums => [...nums].reverse())
-    // setDirection(direction === 'row' ? 'row-reverse' : 'row')
+    // setNums(nums => [...nums].reverse())
+    setDirection(direction === 'row' ? 'row-reverse' : 'row')
   }
 
   const handleAddNums = () => {

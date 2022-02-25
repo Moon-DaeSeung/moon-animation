@@ -20,19 +20,18 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
   const [toValueFn, setToValueFn] = useState(() => (index: number) =>
     transform(springsApi.config(index), ({ to }) => to)
   )
+  const createEquation = (to: number) => ({ displacement, velocity }: MoveInfo) =>
+    (-1 * TENSION * (displacement - to)) - (FRICTION * 1 * velocity)
 
   const [moonConfigFn, setMoonConfigFn] = useState(() => (index:number) =>
-    transform(springsApi.config(index), ({ from, to }) => createMoonCofing(from, to))
-  )
-
-  const createMoonCofing = (from: number, to: number) => (
-    {
-      equation: ({ displacement, velocity }: MoveInfo) =>
-        (-1 * TENSION * (displacement - to)) - (FRICTION * 1 * velocity),
-      initial: {
-        displacement: from, velocity: 0
+    transform(springsApi.config(index), ({ from, to }) => (
+      {
+        equation: createEquation(to),
+        initial: {
+          displacement: from, velocity: 0
+        }
       }
-    }
+    ))
   )
 
   useLayoutEffect(() => {
@@ -41,12 +40,10 @@ const Springs = <T, R>({ springsApi, children, items, getItemId }: SpringsProps<
     }
     const configFn = function (index: number) {
       const toValue = toValueFn(index)
-      const fromValue = moonValuesRef.current[index]
-      const configs = {} as {[key in keyof T]: AnalyzerConfig}
+      const configs = {} as { [key in keyof T]: AnalyzerConfig }
       for (const key in toValue) {
         const to = toValue[key]
-        const { displacement: from } = fromValue[key]
-        configs[key] = createMoonCofing(from, to)
+        configs[key] = { initial: { displacement: to, velocity: 0 }, equation: createEquation(to) }
       }
       return configs
     }

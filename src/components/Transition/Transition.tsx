@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, CSSProperties, useMemo } from 'react'
 import tw from 'twin.macro'
 import isEqual from '../../libs/isEqual'
+import { usePrev } from '../../libs/usePrev'
 import Springs from '../Springs'
 import { SpringsApi } from '../Springs/useSpringsApi'
 
@@ -18,7 +19,6 @@ type XY = [number, number]
 const Transition = <T, >({ children: renderFn, style, getItemId, items, customCss, depths }: TransitionProps<T>) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const childrenRef = useRef<(HTMLElement | null)[]>([])
-  const prevChildrenXYRef = useRef<XY[]>()
   const [isAnimating, setIsAnimating] = useState(false)
   const [springsApi, setSpringsApi] = useState<SpringsApi<{x: number, y: number}>>()
 
@@ -41,24 +41,24 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
 
     const childrenRects = childrenRef.current.filter(child => child !== null)
       .map(child => (child as HTMLElement).getBoundingClientRect())
-    console.log(childrenRects.length)
 
     const childrenXY = childrenRects.map(({ top, bottom, left, right }) => {
       const [childrenX, childrenY] = [(left + right) / 2, (top + bottom) / 2]
       return [childrenX - containerX, childrenY - containerY] as XY
     })
 
-    if (isEqual(childrenXY, prevChildrenXYRef.current)) return
-    prevChildrenXYRef.current = childrenXY
-
     if (springsApi) {
-      springsApi.update((index: number) => ({ y: childrenXY[index][1], x: childrenXY[index][0] }))
+      springsApi.update((index: number) => {
+        return { y: childrenXY[index][1], x: childrenXY[index][0] }
+      })
     } else {
-      setSpringsApi(new SpringsApi((index: number) => ({
-        to: {
-          y: childrenXY[index][1], x: childrenXY[index][0]
+      setSpringsApi(new SpringsApi((index: number) => {
+        return {
+          to: {
+            y: childrenXY[index][1], x: childrenXY[index][0]
+          }
         }
-      })))
+      }))
     }
   }, depths ? [...depths, items.length] : [renderFn, items.length])
   return (
