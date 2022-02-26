@@ -1,7 +1,4 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, CSSProperties, useMemo } from 'react'
-import tw from 'twin.macro'
-import isEqual from '../../libs/isEqual'
-import { usePrev } from '../../libs/usePrev'
 import Springs from '../Springs'
 import { SpringsApi } from '../Springs/useSpringsApi'
 
@@ -21,6 +18,10 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
   const childrenRef = useRef<(HTMLElement | null)[]>([])
   const [isAnimating, setIsAnimating] = useState(false)
   const [springsApi, setSpringsApi] = useState<SpringsApi<{x: number, y: number}>>()
+  const containerRectRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
+  const [relativeRects, setRelativeRects] = useState<{x: number, y: number, width: number, height: number}[]>(
+    Array.from({ length: items.length }, () => ({ x: 0, y: 0, width: 0, height: 0 }))
+  )
 
   useEffect(() => {
     if (!springsApi) return
@@ -34,54 +35,96 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
       top: containerTop,
       bottom: containerBotton,
       left: containerLeft,
-      right: containerRight
+      right: containerRight,
+      width: containerWidth,
+      height: containerHeight
     } = containerRef.current.getBoundingClientRect()
     const [containerX, containerY] =
      [(containerLeft + containerRight) / 2, (containerTop + containerBotton) / 2]
+    containerRectRef.current = {
+      width: containerWidth,
+      height: containerHeight,
+      left: containerLeft,
+      top: containerTop
+    }
 
     const childrenRects = childrenRef.current.filter(child => child !== null)
       .map(child => (child as HTMLElement).getBoundingClientRect())
 
-    const childrenXY = childrenRects.map(({ top, bottom, left, right }) => {
+    const childrenRelativeRects = childrenRects.map(({ top, bottom, left, right, width, height }) => {
       const [childrenX, childrenY] = [(left + right) / 2, (top + bottom) / 2]
-      return [childrenX - containerX, childrenY - containerY] as XY
+      return {
+        x: childrenX - containerX,
+        y: childrenY - containerY,
+        width,
+        height
+      }
     })
 
     if (springsApi) {
       springsApi.update((index: number) => {
-        return { y: childrenXY[index][1], x: childrenXY[index][0] }
+        const { x, y } = childrenRelativeRects[index]
+        return { x, y }
       })
     } else {
       setSpringsApi(new SpringsApi((index: number) => {
+        const { x, y } = childrenRelativeRects[index]
         return {
-          to: {
-            y: childrenXY[index][1], x: childrenXY[index][0]
-          }
+          to: { y, x }
         }
       }))
     }
-  }, depths ? [...depths, items.length] : [renderFn, items.length])
+    setRelativeRects(childrenRelativeRects)
+  }, depths ? [...depths, items] : [renderFn, items])
   return (
     <>
-      <div ref={containerRef} style={!isAnimating ? style : { ...style, visibility: 'hidden' }} css={customCss}>
-        {items.map((value, i) =>
-          React.cloneElement(renderFn(value, i), { ref: (node: any) => { childrenRef.current[i] = node } })
+      <div
+        ref={containerRef}
+        style={!isAnimating ? style : { ...style, visibility: 'hidden' }}
+        css={customCss}
+      >
+        {items.map((item, i) =>
+          React.cloneElement(renderFn(item, i), {
+            ref: (node: any) => {
+              childrenRef.current[i] = node
+            },
+            key: getItemId(item)
+          })
         )}
       </div>
-      <div css={[tw`absolute invisible`, isAnimating && tw`visible`]}>
-        {(springsApi) && <Springs
-          springsApi={springsApi}
-          items={items}
-          getItemId={getItemId}
-        >
-          {(item, { x, y }, index) => {
-            return <div style={{ position: 'absolute', transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}>
-              {renderFn(item, index)}
-            </div>
-          }}
-        </Springs>
-    }
-    </div>
+      <div
+        style={{
+          ...style,
+          boxSizing: 'border-box',
+          position: 'fixed',
+          display: 'block',
+          ...containerRectRef.current,
+          visibility: isAnimating ? 'visible' : 'hidden'
+        }}
+        css={customCss}
+      >
+        {springsApi && (
+          <Springs springsApi={springsApi} items={items} getItemId={getItemId}>
+            {(item, { x, y }, index) => {
+              const { width, height } = relativeRects[index] || { width: 0, height: 0 }
+              const children = renderFn(item, index)
+              return React.cloneElement(children, {
+                style: {
+                  ...children.props.style,
+                  margin: 0,
+                  position: 'absolute',
+                  boxSizing: 'border-box',
+                  width: `${width}px`,
+                  height: `${height}px`,
+                  top: '50%',
+                  left: '50%',
+                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`
+                }
+              })
+            }}
+          </Springs>
+        )}
+      </div>
     </>
   )
 }

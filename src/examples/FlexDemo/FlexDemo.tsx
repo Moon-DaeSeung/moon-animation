@@ -6,10 +6,11 @@ import colors from '../../colors'
 
 const FlexDemo = () => {
   const [nums, setNums] = useState([1, 2, 3, 4])
-  const [direction, setDirection] = useState<'row' | 'row-reverse'>('row')
+  const [direction, setDirection] = useState(0)
+  const directions = ['row', 'column', 'row-reverse', 'column-reverse']
   const handleDirection = () => {
     // setNums(nums => [...nums].reverse())
-    setDirection(direction === 'row' ? 'row-reverse' : 'row')
+    setDirection(direction % 4 + 1)
   }
 
   const handleAddNums = () => {
@@ -29,19 +30,19 @@ const FlexDemo = () => {
     })
   }
   return (
-    <div tw='bg-blue-200 w-full h-screen' css={center}>
+    <div tw='bg-blue-200 w-full height[500px]' css={center}>
       <button tw='absolute top[50px] min-w-full h-8 text-xl' onClick={handleAddNums}>add</button>
       <button tw='absolute top[100px] min-w-full h-8 text-xl' onClick={handleSubtractNums}>minus</button>
       <button tw='absolute top[0px] min-w-full h-8 text-xl' onClick={handleDirection}>direction</button>
       <Transition
-        customCss={[tw`flex`, css`flex-direction: ${direction};`]}
+        customCss={[tw`flex`, css`flex-direction: ${directions[direction]};`]}
         items={nums}
         getItemId={(value) => value}
         depths={[direction]}
        >
         {((value) =>
           <div key={value}
-            tw='rounded-full w-14 h-14 m-2.5' css={center}
+            tw=' w-14 h-14 m-2.5' css={center}
             style={{
               background: colors[(value - 1) % colors.length].css
             }}>

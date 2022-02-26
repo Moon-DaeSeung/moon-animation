@@ -42,7 +42,17 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     if (!isFirstRendered.current && !isItemOrderChanged(items, prevItems) && !(depths ? true : isConfigFnChanged(configFn, prevConfigFn))) {
       return
     }
-    const configs = Array.from({ length: prevItems.length }, (_, index) => configFn(index))
+    let configs
+    try {
+      /** if items and configFn are changed at the same time, this effect is invoked twice.
+       * On first invoked items are changed (configFn is not)
+       * there is some case in which configFn depends on items'length
+       * in that case, configFn(index) may return error. so I wrapped try-catch. when next invoked, it will work properly
+       * */
+      configs = Array.from({ length: items.length }, (_, index) => configFn(index))
+    } catch (error) {
+      return
+    }
     const itemOrders = items.map(item => {
       return !isFirstRendered.current ? prevItems.findIndex(prevItem => getItemId(prevItem) === getItemId(item)) : -1
     })
@@ -67,14 +77,17 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     internalControllRef.current = controller
     start()
     onStart && onStart()
-    isFirstRendered.current = false
     return () => cancle()
   }, depths ? [items, ...depths] : [items, configFn])
 
   useEffect(() => {
+    if (isFirstRendered.current) {
+      isFirstRendered.current = false
+      return
+    }
     moonValuesRef && moonValuesRef(moonValues)
     const internalController = internalControllRef.current
-    if (!prevMoonValues || !internalController || moonValues.length !== prevMoonValues.length) return
+    if (!internalController || moonValues.length !== prevMoonValues.length) return
     for (let i = 0; i < moonValues.length; i++) {
       const [prevMoonValue, moonValue] = [prevMoonValues[i], moonValues[i]]
       for (const key in moonValue) {
