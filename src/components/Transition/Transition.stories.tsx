@@ -46,7 +46,7 @@ export const Flex = () => {
         >
           {((value) =>
             <div key={value}
-              tw='width[10vw] height[10vw] font-size[5vw] rounded-full' css={center}
+              tw='width[8vw] height[8vw] font-size[5vw] rounded-full' css={center}
               style={{
                 background: colors[(value - 1) % colors.length].css
               }}>
