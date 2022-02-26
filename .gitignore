@@ -1,2 +1,4 @@
 node_modules
 .docz
+.storybook
+dist

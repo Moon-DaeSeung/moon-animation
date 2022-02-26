@@ -1,6 +1,6 @@
-import { isEqual } from 'lodash'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { FrameLoop } from '../../libs/FrameLoop'
+import isEqual from '../../libs/isEqual'
 import { NumericalAnalyzer } from '../../libs/NumericalAnalyzer'
 import { transform } from '../../libs/transform'
 import { usePrev } from '../../libs/usePrev'
