@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, CSSProperties, useMemo } from 'react'
+import { getContainerBlock } from '../../libs/getContainerBlock'
 import Springs from '../Springs'
 import { SpringsApi } from '../Springs/useSpringsApi'
 
@@ -11,14 +12,14 @@ export type TransitionProps<T> = {
   depths?: any[]
 }
 
-type XY = [number, number]
-
 const Transition = <T, >({ children: renderFn, style, getItemId, items, customCss, depths }: TransitionProps<T>) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const childrenRef = useRef<(HTMLElement | null)[]>([])
   const [isAnimating, setIsAnimating] = useState(false)
   const [springsApi, setSpringsApi] = useState<SpringsApi<{x: number, y: number}>>()
   const containerRectRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
+  const containerBlocRectkRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
+  const prevContainerRectRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
   const [relativeRects, setRelativeRects] = useState<{x: number, y: number, width: number, height: number}[]>(
     Array.from({ length: items.length }, () => ({ x: 0, y: 0, width: 0, height: 0 }))
   )
@@ -47,6 +48,9 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
       left: containerLeft,
       top: containerTop
     }
+    containerBlocRectkRef.current = getContainerBlock(containerRef.current)
+      .getBoundingClientRect()
+    console.log(getContainerBlock(containerRef.current), containerRef.current)
 
     const childrenRects = childrenRef.current.filter(child => child !== null)
       .map(child => (child as HTMLElement).getBoundingClientRect())
@@ -74,32 +78,45 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
         }
       }))
     }
+
     setRelativeRects(childrenRelativeRects)
+    if (!isAnimating) prevContainerRectRef.current = containerRectRef.current
   }, depths ? [...depths, items] : [renderFn, items])
+  const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = containerRectRef.current
+  const { top: containerBlockTop, left: containerBlockLeft } = containerBlocRectkRef.current
+  console.log(containerBlockTop, containerTop)
+
   return (
     <>
-      <div
-        ref={containerRef}
-        style={!isAnimating ? style : { ...style, visibility: 'hidden' }}
-        css={customCss}
-      >
-        {items.map((item, i) =>
-          React.cloneElement(renderFn(item, i), {
-            ref: (node: any) => {
-              childrenRef.current[i] = node
-            },
-            key: getItemId(item)
-          })
-        )}
-      </div>
+    <div
+      ref={containerRef}
+      style={!isAnimating
+        ? style
+        : {
+            ...style,
+            visibility: 'hidden'
+          }}
+      css={customCss}
+    >
+      {items.map((item, i) =>
+        React.cloneElement(renderFn(item, i), {
+          ref: (node: any) => {
+            childrenRef.current[i] = node
+          },
+          key: getItemId(item)
+        })
+      )}
+    </div>
       <div
         style={{
           ...style,
           boxSizing: 'border-box',
-          position: 'fixed',
-          display: 'block',
-          ...containerRectRef.current,
-          visibility: isAnimating ? 'visible' : 'hidden'
+          position: 'absolute',
+          display: isAnimating ? 'block' : 'none',
+          height: containerHeight,
+          width: containerWidth,
+          top: containerTop - containerBlockTop,
+          left: containerLeft - containerBlockLeft
         }}
         css={customCss}
       >

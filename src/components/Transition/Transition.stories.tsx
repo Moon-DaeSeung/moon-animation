@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { ComponentMeta } from '@storybook/react'
 import Transition from './Transition'
+import { useDrag } from '@use-gesture/react'
 import tw from 'twin.macro'
 import { css } from '@emotion/react'
 import colors from '../../colors'
@@ -32,21 +33,21 @@ export const Flex = () => {
     })
   }
   return (
-    <div tw='bg-blue-200 height[500px]'>
-      <div tw='flex gap-2 flex-row-reverse'>
+    <div tw='height[50vh]'>
+      <div tw='flex gap-2 flex-row-reverse flex-1'>
         <button tw='h-8 text-xl' onClick={handleAddNums}>add</button>
         <button tw='h-8 text-xl'onClick={handleSubtractNums}>minus</button>
         <button tw='h-8 text-xl' onClick={handleDirection}>direction</button>
       </div>
-      <div tw='flex h-full' css={center}>
+      <div tw='h-full flex justify-center items-center'>
         <Transition
-          customCss={[tw`flex gap[5vw]`, css`flex-direction: ${directions[direction]};`]}
+          customCss={[tw`flex gap-5 border[1px solid]`, css`flex-direction: ${directions[direction]};`]}
           items={nums}
           getItemId={(value) => value}
         >
           {((value) =>
             <div key={value}
-              tw='width[8vw] height[8vw] font-size[5vw] rounded-full' css={center}
+              tw='w-16 h-16 text-2xl rounded-2xl shadow-lg' css={center}
               style={{
                 background: colors[(value - 1) % colors.length].css
               }}>
@@ -60,34 +61,41 @@ export const Flex = () => {
 }
 
 export const Grid = () => {
-  const [col, setCol] = useState(1)
-  const [item] = useState([{ name: 'item' }])
-  const move = () => {
-    setCol(col % 5 + 1)
+  const [items, setItems] = useState([{ id: 1, ...colors[0] }])
+  const add = () => {
+    setItems([
+      {
+        id: items.length + 1,
+        ...colors[items.length % colors.length]
+      }, ...items
+    ])
+  }
+  const minus = () => {
+    const copied = [...items]
+    copied.shift()
+    setItems(copied)
   }
   return (
-    <div tw='bg-blue-300' >
-      <button tw='text-2xl' onClick={move}>move</button>
-      <div tw='grid grid-cols-5'>
-        {[1, 2, 3, 4, 5].map(value =>
-          <div key={value} tw='p-1 border-solid border-0 border-l-2'>
-            {value}
-          </div>
-        )}
+    <div tw='height[50vh]'>
+      <div tw='flex justify-end gap-2'>
+        <button tw='text-2xl shadow-md' onClick={add}>add</button>
+        <button tw='text-2xl shadow-md' onClick={minus}>minus</button>
       </div>
-         <Transition
-           items={item}
-           getItemId={({ name }) => name}
-           customCss={tw`grid grid-cols-5`}
-          >
-             {({ name }) =>
-             <div
-             tw='bg-green-300 border-green-500 flex justify-center rounded text-2xl '
-             style={{ gridColumn: col }}
-             >
-               {name}
-             </div>}
-         </Transition>
+      <div tw=''>
+        <Transition
+          items={items}
+          getItemId={({ id }) => id}
+          customCss={tw`grid grid-cols-4 gap-2 h-full bg-red-200 grid-auto-rows[40px]`}
+        >
+          {({ name, css }) =>
+            <div
+            tw='flex justify-center rounded text-2xl p-1 shadow-md truncate h-7'
+            style={{ background: css }}
+            >
+              {name}
+            </div>}
+        </Transition>
+      </div>
     </div>
   )
 }
