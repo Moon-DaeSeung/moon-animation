@@ -50,7 +50,6 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
     }
     containerBlocRectkRef.current = getContainerBlock(containerRef.current)
       .getBoundingClientRect()
-    console.log(getContainerBlock(containerRef.current), containerRef.current)
 
     const childrenRects = childrenRef.current.filter(child => child !== null)
       .map(child => (child as HTMLElement).getBoundingClientRect())
@@ -84,7 +83,6 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
   }, depths ? [...depths, items] : [renderFn, items])
   const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = containerRectRef.current
   const { top: containerBlockTop, left: containerBlockLeft } = containerBlocRectkRef.current
-  console.log(containerBlockTop, containerTop)
 
   return (
     <>

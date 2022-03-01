@@ -41,7 +41,7 @@ export const Flex = () => {
       </div>
       <div tw='h-full flex justify-center items-center'>
         <Transition
-          customCss={[tw`flex gap-5 border[1px solid]`, css`flex-direction: ${directions[direction]};`]}
+          customCss={[tw`flex gap-5`, css`flex-direction: ${directions[direction]};`]}
           items={nums}
           getItemId={(value) => value}
         >
@@ -81,11 +81,11 @@ export const Grid = () => {
         <button tw='text-2xl shadow-md' onClick={add}>add</button>
         <button tw='text-2xl shadow-md' onClick={minus}>minus</button>
       </div>
-      <div tw=''>
+      <div tw='h-full'>
         <Transition
           items={items}
           getItemId={({ id }) => id}
-          customCss={tw`grid grid-cols-4 gap-2 h-full bg-red-200 grid-auto-rows[40px]`}
+          customCss={tw`grid grid-cols-4 gap-2 h-full grid-auto-rows[40px]`}
         >
           {({ name, css }) =>
             <div
