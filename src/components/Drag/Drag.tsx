@@ -1,29 +1,34 @@
 import { useDrag } from '@use-gesture/react'
 import React, { useEffect, useRef, useState } from 'react'
 import { getContainerBlock } from '../../libs/getContainerBlock'
-import { Portal } from '../../libs/Portal'
 import Spring from '../Spring'
 import { useSpringApi } from '../Spring/useSpringApi'
 
 export type DragProps = {
   children: React.ReactElement,
   type?: 'stay' | 'reset'
+  args?: any
+  onDrag?: (information:{args: any, movement: [number, number], offset: [number, number], down: boolean}) => void
+  axis?: 'x' | 'y' | 'both'
 }
 
-const Drag = ({ children, type = 'reset' }: DragProps) => {
+const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragProps) => {
   const childrenRef = useRef<HTMLElement | null>(null)
   const [childrenRect, setChildrenRect] = useState({ width: 0, height: 0, x: 0, y: 0 })
   const containerBlockRef = useRef({ width: 0, height: 0, x: 0, y: 0 })
   const [isMoving, setIsMoving] = useState(false)
 
   const springApi = useSpringApi({ to: { x: 0, y: 0 } })
-  const bind = useDrag(({ offset: [x, y], movement: [dx, dy], down }) => {
+  const bind = useDrag(({ args, offset, movement, down }) => {
+    const [dx, dy] = movement
+    const [x, y] = offset
     if (type === 'reset') {
       down ? springApi.update({ x: dx, y: dy }) : springApi.update({ x: 0, y: 0 })
     } else {
       down && springApi.update({ x, y })
     }
     down !== isMoving && setIsMoving(down)
+    onDrag && onDrag({ args, movement, offset, down })
   })
 
   useEffect(() => {
@@ -54,7 +59,7 @@ const Drag = ({ children, type = 'reset' }: DragProps) => {
       springApi={springApi}
      >
       {({ x, y }) => React.cloneElement(children, {
-        ...bind(),
+        ...bind(args),
         style: {
           ...children.props.style,
           touchAction: 'none',
@@ -65,8 +70,8 @@ const Drag = ({ children, type = 'reset' }: DragProps) => {
           boxSizing: 'border-box',
           width: `${childrenWidth}px`,
           height: `${childrenHeight}px`,
-          top: `${childrenY - containerBlockY + y}px`,
-          left: `${childrenX - containerBlockX + x}px`
+          top: `${childrenY - containerBlockY + axis === 'x' ? 0 : y}px`,
+          left: `${childrenX - containerBlockX + axis === 'y' ? 0 : x}px`
         }
       })}
      </Spring>
