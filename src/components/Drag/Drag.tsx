@@ -1,5 +1,5 @@
 import { useDrag } from '@use-gesture/react'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { getContainerBlock } from '../../libs/getContainerBlock'
 import Spring from '../Spring'
 import { useSpringApi } from '../Spring/useSpringApi'
@@ -12,10 +12,11 @@ export type DragProps = {
   axis?: 'x' | 'y' | 'both'
 }
 
-const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragProps) => {
+const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragProps, ref?: any) => {
   const childrenRef = useRef<HTMLElement | null>(null)
   const [childrenRect, setChildrenRect] = useState({ width: 0, height: 0, x: 0, y: 0 })
   const containerBlockRef = useRef({ width: 0, height: 0, x: 0, y: 0 })
+  useImperativeHandle(ref, () => childrenRef.current)
   const [isMoving, setIsMoving] = useState(false)
 
   const springApi = useSpringApi({ to: { x: 0, y: 0 } })
@@ -70,8 +71,8 @@ const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragPro
           boxSizing: 'border-box',
           width: `${childrenWidth}px`,
           height: `${childrenHeight}px`,
-          top: `${childrenY - containerBlockY + axis === 'x' ? 0 : y}px`,
-          left: `${childrenX - containerBlockX + axis === 'y' ? 0 : x}px`
+          top: `${childrenY - containerBlockY + (axis === 'x' ? 0 : y)}px`,
+          left: `${childrenX - containerBlockX + (axis === 'y' ? 0 : x)}px`
         }
       })}
      </Spring>
@@ -79,4 +80,4 @@ const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragPro
   )
 }
 
-export default Drag
+export default React.forwardRef(Drag)

@@ -19,13 +19,17 @@ export const Shuffle = () => {
   ])
   const itemsRef = useRef<(HTMLElement | null)[]>([])
   const [unitY, setUnitY] = useState<number>()
+  const [forceUpdate, setForceUpdate] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    setForceUpdate(true)
+    console.log('hi')
     const itemRects = itemsRef.current.filter(child => child !== null)
       .map((child) => child!.getBoundingClientRect())
     if (itemRects.length === 0) return
     setUnitY(itemRects[1].y - itemRects[0].y)
-  }, [])
+    console.log(itemRects[1])
+  }, [forceUpdate])
 
   const handleDrag = ({ args: item, movement: [_, dy] }: {args: Item, movement: [number, number]}) => {
     if (!unitY) return
