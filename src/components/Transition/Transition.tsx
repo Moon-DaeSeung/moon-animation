@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, CSSProperties, useMemo } from 'react'
 import { getContainerBlock } from '../../libs/getContainerBlock'
+import { useTrigger } from '../../libs/useTrigger'
 import Springs from '../Springs'
 import { SpringsApi } from '../Springs/useSpringsApi'
 
@@ -18,11 +19,24 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
   const [isAnimating, setIsAnimating] = useState(false)
   const [springsApi, setSpringsApi] = useState<SpringsApi<{x: number, y: number}>>()
   const containerRectRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
-  const containerBlocRectkRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
+  const containerBlockRectkRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
   const prevContainerRectRef = useRef({ width: 0, height: 0, left: 0, top: 0 })
   const [relativeRects, setRelativeRects] = useState<{x: number, y: number, width: number, height: number}[]>(
     Array.from({ length: items.length }, () => ({ x: 0, y: 0, width: 0, height: 0 }))
   )
+  const [trigger, forceUpdate] = useTrigger()
+
+  useEffect(() => {
+    if (containerRef.current === null) return
+    const containerBlock = getContainerBlock(containerRef.current)
+    const resizeObserver = new ResizeObserver(() => {
+      forceUpdate()
+    })
+
+    resizeObserver.observe(containerRef.current)
+    resizeObserver.observe(containerBlock)
+    return () => resizeObserver.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!springsApi) return
@@ -48,7 +62,7 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
       left: containerLeft,
       top: containerTop
     }
-    containerBlocRectkRef.current = getContainerBlock(containerRef.current)
+    containerBlockRectkRef.current = getContainerBlock(containerRef.current)
       .getBoundingClientRect()
 
     const childrenRects = childrenRef.current.filter(child => child !== null)
@@ -80,9 +94,9 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
 
     setRelativeRects(childrenRelativeRects)
     if (!isAnimating) prevContainerRectRef.current = containerRectRef.current
-  }, depths ? [...depths, items] : [renderFn, items])
+  }, depths ? [...depths, trigger, items] : [renderFn, trigger, items])
   const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = containerRectRef.current
-  const { top: containerBlockTop, left: containerBlockLeft } = containerBlocRectkRef.current
+  const { top: containerBlockTop, left: containerBlockLeft } = containerBlockRectkRef.current
 
   return (
     <>
@@ -104,6 +118,7 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
       )}
     </div>
       <div
+        ref={containerRef}
         style={{
           ...style,
           boxSizing: 'border-box',
