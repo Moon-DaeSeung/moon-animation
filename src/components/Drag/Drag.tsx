@@ -1,5 +1,6 @@
 import { useDrag } from '@use-gesture/react'
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import colors from '../../colors'
 import { getContainerBlock } from '../../libs/getContainerBlock'
 import Spring from '../Spring'
 import { useSpringApi } from '../Spring/useSpringApi'
@@ -8,12 +9,13 @@ export type DragProps = {
   children: React.ReactElement,
   type?: 'stay' | 'reset'
   args?: any
-  onDrag?: (information:{args: any, movement: [number, number], offset: [number, number], down: boolean}) => void
+  onDrag?: (node: HTMLElement, information:{args: any, movement: [number, number], offset: [number, number], down: boolean}) => void
   axis?: 'x' | 'y' | 'both'
 }
 
 const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragProps, ref?: any) => {
   const childrenRef = useRef<HTMLElement | null>(null)
+  const movedNodeRef = useRef<HTMLElement | null>(null)
   const [childrenRect, setChildrenRect] = useState({ width: 0, height: 0, x: 0, y: 0 })
   const containerBlockRef = useRef({ width: 0, height: 0, x: 0, y: 0 })
   useImperativeHandle(ref, () => childrenRef.current)
@@ -29,7 +31,7 @@ const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragPro
       down && springApi.update({ x, y })
     }
     down !== isMoving && setIsMoving(down)
-    onDrag && onDrag({ args, movement, offset, down })
+    onDrag && onDrag(movedNodeRef.current!!, { args, movement, offset, down })
   })
 
   useEffect(() => {
@@ -41,6 +43,8 @@ const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragPro
 
   const { width: childrenWidth, height: childrenHeight, x: childrenX, y: childrenY } = childrenRect
   const { x: containerBlockX, y: containerBlockY } = containerBlockRef.current
+  const [draggable, setDraggable] = useState(false)
+  console.log(draggable)
 
   return (
     <>
@@ -61,6 +65,10 @@ const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragPro
      >
       {({ x, y }) => React.cloneElement(children, {
         ...bind(args),
+        ref: (node: any) => { movedNodeRef.current = node },
+        draggable,
+        onMouseDown: () => setDraggable(true),
+        onMouseUp: () => setDraggable(false),
         style: {
           ...children.props.style,
           touchAction: 'none',

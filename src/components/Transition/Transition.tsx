@@ -88,12 +88,10 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
     <>
     <div
       ref={containerRef}
-      style={!isAnimating
-        ? style
-        : {
-            ...style,
-            visibility: 'hidden'
-          }}
+      style={{
+        ...style,
+        visibility: 'hidden'
+      }}
       css={customCss}
     >
       {items.map((item, i) =>
@@ -110,7 +108,7 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
           ...style,
           boxSizing: 'border-box',
           position: 'absolute',
-          display: isAnimating ? 'block' : 'none',
+          display: 'block',
           height: containerHeight,
           width: containerWidth,
           top: containerTop - containerBlockTop,

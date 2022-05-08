@@ -1,9 +1,8 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import tw from 'twin.macro'
 import { css } from '@emotion/react'
 import colors from './colors'
 import { Transition } from '.'
-import Drag from './components/Drag'
 
 export default {
   title: 'Example'
@@ -17,34 +16,19 @@ export const Shuffle = () => {
     { id: 3, background: colors[3].css, name: 'DOLOR' },
     { id: 4, background: colors[4].css, name: 'SIT' }
   ])
-  const itemsRef = useRef<(HTMLElement | null)[]>([])
-  const [unitY, setUnitY] = useState<number>()
-  const [forceUpdate, setForceUpdate] = useState(false)
+  const selectedItemRef = useRef<Item>()
 
-  useLayoutEffect(() => {
-    setForceUpdate(true)
-    console.log('hi')
-    const itemRects = itemsRef.current.filter(child => child !== null)
-      .map((child) => child!.getBoundingClientRect())
-    if (itemRects.length === 0) return
-    setUnitY(itemRects[1].y - itemRects[0].y)
-    console.log(itemRects[1])
-  }, [forceUpdate])
+  const shuffle = (intersected: Item) => {
+    if (!selectedItemRef.current) return
+    if (selectedItemRef.current.id === intersected.id) return
 
-  const handleDrag = ({ args: item, movement: [_, dy] }: {args: Item, movement: [number, number]}) => {
-    if (!unitY) return
-    const index = items.findIndex((value) => value === item)
-    const next = clamp(index + Math.floor(dy / unitY))
-    const copied = [...items]
-    copied[index] = copied[next]
-    copied[next] = item
-    setItems(copied)
-  }
-
-  const clamp = (index: number) => {
-    if (index <= 0) return 0
-    if (index >= (items.length - 1)) return items.length - 1
-    return index
+    setItems(prev => {
+      return prev.map(item => {
+        if (selectedItemRef.current!.id === item.id) return intersected
+        if (intersected.id === item.id) return selectedItemRef.current!
+        return item
+      })
+    })
   }
 
   return (
@@ -54,19 +38,17 @@ export const Shuffle = () => {
         getItemId={({ id }) => id}
         customCss={tw`flex flex-col gap-2`}
       >
-        {(item, index) => {
+        {item => {
           const { name, background } = item
           return (
-            <Drag ref={ (node: any) => { itemsRef.current[index] = node }}
-              args={item}
-              onDrag={handleDrag}
-              axis='y'
-            >
-              <div
-                css={[tw`width[150px] pl-10 py-2 rounded shadow-md`, css`background: ${background};`]}>
-                {name}
-              </div>
-            </Drag>
+            <div
+              draggable
+              onDragEnter={() => shuffle(item)}
+              onMouseDown={() => { selectedItemRef.current = item } }
+              onMouseUp={() => { selectedItemRef.current = undefined }}
+              css={[tw`width[150px] pl-10 py-2 rounded shadow-md`, css`background: ${background};`]}>
+              {name}
+            </div>
           )
         }
         }

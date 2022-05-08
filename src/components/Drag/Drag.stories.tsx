@@ -5,10 +5,12 @@ import { css } from '@emotion/react'
 import Drag from '.'
 import colors from '../../colors'
 
+/*
 export default {
   title: 'UI/Drag',
   component: Drag
 } as ComponentMeta<typeof Drag>
+*/
 
 export const Primary = () => {
   return (
