@@ -1,6 +1,7 @@
 import { ComponentMeta } from '@storybook/react'
 import React from 'react'
 import Moon from '.'
+import colors from '../../colors'
 
 export default {
   title: 'Animation/Moon',
@@ -12,20 +13,18 @@ export const Primary = () => {
     <Moon
       config={{
         x: {
-          initial: { displacement: 300, velocity: 0 },
+          initial: { displacement: -300, velocity: 0 },
           equation: ({ displacement, velocity }) =>
-            -10 * displacement - 6 * velocity
+            -2 * displacement - 0.2 * velocity
         }
       }}
     >
       {({ x }) => {
         return (
-          <div
-            tw='flex justify-center items-center border[solid 2px] width[500px] height[80px]'
-          >
+          <div tw='flex justify-center items-center height[80px]'>
             <div
-              tw='relative bg-blue-400 width[50px] height[50px] rounded-full'
-              style={{ left: x + 'px' }}
+              tw='relative bg-blue-400 width[50px] height[50px] rounded-full shadow-md'
+              style={{ left: x + 'px', background: colors[1].css }}
             />
           </div>
         )
