@@ -1,11 +1,12 @@
 {
-  "name": "react-moon",
+  "name": "moon-animation",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
-  "homepage": "https://github.com/Moon-DaeSeung/react-moon.git",
+  "homepage": "https://github.com/Moon-DaeSeung/moon-animation.git",
+  "storybookPage": "https://moon-daeseung.github.io/moon-animation",
   "scripts": {
     "prepackage-deploy": "npm run package-build",
     "package-deploy": "cp package.json dist/package.json && cd dist ",
@@ -17,7 +18,7 @@
     "storybook": "start-storybook -p 6006"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0",
     "react-dom": "^16.0.0 || ^17.0.0"
