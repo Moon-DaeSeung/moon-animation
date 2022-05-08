@@ -23,7 +23,8 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
   const internalControllRef = useRef<Controller>()
   const isFirstRendered = useRef(true)
   const [moonValues, setMoonValues] = useState<MoonValue<T>[]>([])
-  const [prevItems, prevConfigFn, prevMoonValues] = [usePrev(items), usePrev(configFn), usePrev(moonValues)]
+  const [prevConfigFn, prevMoonValues] = [usePrev(configFn), usePrev(moonValues)]
+  const prevItemsRef = useRef(items)
   const isItemOrderChanged = (current: R[], prev: R[]) => {
     if (prev === current) return false
     if (prev.length !== current.length) return true
@@ -39,6 +40,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
   }
 
   useLayoutEffect(() => {
+    const prevItems = prevItemsRef.current
     if (!isFirstRendered.current && !isItemOrderChanged(items, prevItems) && !(depths ? true : isConfigFnChanged(configFn, prevConfigFn))) {
       return
     }
@@ -77,6 +79,7 @@ const Moons = <T, R>({ children, config: configFn, items, getItemId, controllerR
     internalControllRef.current = controller
     start()
     onStart && onStart()
+    prevItemsRef.current = items
     return () => cancle()
   }, depths ? [items, ...depths] : [items, configFn])
 

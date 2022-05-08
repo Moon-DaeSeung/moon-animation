@@ -1,6 +1,7 @@
 import { ComponentMeta } from '@storybook/react'
 import React, { useState } from 'react'
 import Spring from '.'
+import colors from '../../colors'
 import { useSpringApi } from './useSpringApi'
 
 export default {
@@ -9,10 +10,10 @@ export default {
 } as ComponentMeta<typeof Spring>
 
 export const Primary = () => {
-  const springApi = useSpringApi({ from: { x: 200 }, to: { x: 0 } })
+  const springApi = useSpringApi({ from: { x: -300 }, to: { x: 0 } })
   const [toggle, setToggle] = useState(false)
   const handleClick = () => {
-    springApi.update({ x: !toggle ? 200 : 0 })
+    springApi.update({ x: !toggle ? -300 : 0 })
     setToggle(!toggle)
   }
   return (
@@ -22,10 +23,10 @@ export const Primary = () => {
       </button>
       <Spring springApi={springApi}>
         {({ x }) => (
-          <div tw="relative flex justify-center items-center width[500px] height[80px] border[solid 2px]">
+          <div tw="relative flex justify-center items-center height[80px]">
             <div
-              tw="relative bg-blue-400 width[50px] height[50px] rounded-full"
-              style={{ left: x + 'px' }}
+              tw="relative  width[50px] height[50px] rounded-full"
+              style={{ left: x + 'px', background: colors[5].css }}
             />
           </div>
         )}
