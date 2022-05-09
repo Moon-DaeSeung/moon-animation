@@ -1,90 +1,84 @@
-import { useDrag } from '@use-gesture/react'
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
-import colors from '../../colors'
-import { getContainerBlock } from '../../libs/getContainerBlock'
+import React, { useImperativeHandle, useRef } from 'react'
 import Spring from '../Spring'
 import { useSpringApi } from '../Spring/useSpringApi'
 
 export type DragProps = {
-  children: React.ReactElement,
-  type?: 'stay' | 'reset'
-  args?: any
-  onDrag?: (node: HTMLElement, information:{args: any, movement: [number, number], offset: [number, number], down: boolean}) => void
+  children: React.ReactElement
+  type?: 'reset'
   axis?: 'x' | 'y' | 'both'
+  onMouseDown?: (e: React.DragEvent<HTMLDivElement>) => void
+  onMouseUp?: (e: React.DragEvent<HTMLDivElement>) => void
+  onDragEnter?: (e: React.DragEvent<HTMLDivElement>) => void
+  onDragExit?: (e: React.DragEvent<HTMLDivElement>) => void
 }
 
-const Drag = ({ children, type = 'reset', args, axis = 'both', onDrag }: DragProps, ref?: any) => {
+const Drag = ({ children, type = 'reset', axis = 'both', onMouseDown, onMouseUp, onDragEnter, onDragExit }: DragProps, ref?: any) => {
   const childrenRef = useRef<HTMLElement | null>(null)
-  const movedNodeRef = useRef<HTMLElement | null>(null)
-  const [childrenRect, setChildrenRect] = useState({ width: 0, height: 0, x: 0, y: 0 })
-  const containerBlockRef = useRef({ width: 0, height: 0, x: 0, y: 0 })
   useImperativeHandle(ref, () => childrenRef.current)
-  const [isMoving, setIsMoving] = useState(false)
-
   const springApi = useSpringApi({ to: { x: 0, y: 0 } })
-  const bind = useDrag(({ args, offset, movement, down }) => {
-    const [dx, dy] = movement
-    const [x, y] = offset
-    if (type === 'reset') {
-      down ? springApi.update({ x: dx, y: dy }) : springApi.update({ x: 0, y: 0 })
-    } else {
-      down && springApi.update({ x, y })
-    }
-    down !== isMoving && setIsMoving(down)
-    onDrag && onDrag(movedNodeRef.current!!, { args, movement, offset, down })
-  })
+  const selectedXYRef = useRef<[number, number]>([0, 0])
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    selectedXYRef.current = [e.pageX, e.pageY]
+    const canvas = document.createElement('canvas')
+    e.dataTransfer.setDragImage(canvas, 0, 0)
+  }
 
-  useEffect(() => {
-    const childrenEl = childrenRef.current
-    if (!childrenEl) return
-    setChildrenRect(childrenEl.getBoundingClientRect())
-    containerBlockRef.current = getContainerBlock(childrenEl).getBoundingClientRect()
-  }, [isMoving])
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    type === 'reset' && springApi.update({ x: 0, y: 0 })
+  }
 
-  const { width: childrenWidth, height: childrenHeight, x: childrenX, y: childrenY } = childrenRect
-  const { x: containerBlockX, y: containerBlockY } = containerBlockRef.current
-  const [draggable, setDraggable] = useState(false)
-  console.log(draggable)
+  const handleDrag = ({ pageX, pageY }: React.DragEvent<HTMLDivElement>) => {
+    const [originX, originY] = selectedXYRef.current
+    const [x, y] = [pageX - originX, pageY - originY]
+    springApi.update({ x, y })
+  }
 
   return (
-    <>
-     {React.cloneElement(children, {
-       ref: (node: any) => { childrenRef.current = node },
-       style: {
-         ...children.props.style,
-         backgroundColor: 'inherit',
-         outline: 'dotted 2px #F8F8FF',
-         boxShadow: 'none',
-         outlineOffset: '-2px',
-         color: 'rgba(0,0,0,0)',
-         background: 'rgba(0,0,0,0)'
-       }
-     })}
-     <Spring
-      springApi={springApi}
-     >
-      {({ x, y }) => React.cloneElement(children, {
-        ...bind(args),
-        ref: (node: any) => { movedNodeRef.current = node },
-        draggable,
-        onMouseDown: () => setDraggable(true),
-        onMouseUp: () => setDraggable(false),
+    <div
+      tw='relative'
+      draggable
+      onDragStart={handleDragStart}
+      onDrag={handleDrag}
+      onDragEnd={handleDragEnd}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onDragEnter={onDragEnter}
+      onDragExit={onDragExit}
+    >
+      {React.cloneElement(children, {
+        ref: (node: any) => { childrenRef.current = node },
         style: {
           ...children.props.style,
-          touchAction: 'none',
-          cursor: 'pointer',
-          margin: 0,
-          userSelect: 'none',
-          position: 'absolute',
-          boxSizing: 'border-box',
-          width: `${childrenWidth}px`,
-          height: `${childrenHeight}px`,
-          top: `${childrenY - containerBlockY + (axis === 'x' ? 0 : y)}px`,
-          left: `${childrenX - containerBlockX + (axis === 'y' ? 0 : x)}px`
+          backgroundColor: 'inherit',
+          outline: 'dotted 2px #F8F8FF',
+          boxShadow: 'none',
+          outlineOffset: '-2px',
+          color: 'rgba(0,0,0,0)',
+          background: 'rgba(0,0,0,0)'
         }
       })}
-     </Spring>
-    </>
+      <Spring
+        springApi={springApi}
+      >
+        {({ x, y }) =>
+        <div tw=''>
+          {React.cloneElement(children, {
+            style: {
+              ...children.props.style,
+              touchAction: 'none',
+              cursor: 'pointer',
+              margin: 0,
+              userSelect: 'none',
+              position: 'absolute',
+              boxSizing: 'border-box',
+              width: '100%',
+              height: '100%',
+              top: `${(axis === 'x' ? 0 : y)}px`,
+              left: `${(axis === 'y' ? 0 : x)}px`
+            }
+          })}</div>}
+      </Spring>
+    </div>
   )
 }
 

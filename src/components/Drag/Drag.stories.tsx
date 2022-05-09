@@ -5,12 +5,10 @@ import { css } from '@emotion/react'
 import Drag from '.'
 import colors from '../../colors'
 
-/*
 export default {
   title: 'UI/Drag',
   component: Drag
 } as ComponentMeta<typeof Drag>
-*/
 
 export const Primary = () => {
   return (
@@ -20,6 +18,11 @@ export const Primary = () => {
           Drag
         </div>
       </Drag>
+      <div
+        onDragEnter={() => console.log('drag entered')}
+        tw='absolute bg-red-200 px-10 py-5 rounded shadow-md right[30px]'>
+        도착지
+      </div>
     </div>
   )
 }
