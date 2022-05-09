@@ -9,7 +9,7 @@
   "storybookPage": "https://moon-daeseung.github.io/moon-animation",
   "scripts": {
     "prepackage-deploy": "npm run package-build",
-    "package-deploy": "cp package.json dist/package.json && cd dist ",
+    "package-deploy": "cp package.json dist/package.json && cd dist && npm publish",
     "package-build": "rollup -c",
     "start": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
