@@ -4,6 +4,7 @@ import Transition from './Transition'
 import tw from 'twin.macro'
 import { css } from '@emotion/react'
 import colors from '../../colors'
+import Drag from '../Drag'
 
 export default {
   title: 'Animation/Transition',
@@ -132,14 +133,16 @@ export const Shuffle = () => {
         {item => {
           const { name, background } = item
           return (
-            <div
-              draggable
+            <Drag
               onDragEnter={() => shuffle(item)}
               onMouseDown={() => { selectedItemRef.current = item } }
               onMouseUp={() => { selectedItemRef.current = undefined }}
-              css={[tw`width[150px] pl-10 py-2 rounded shadow-md`, css`background: ${background};`]}>
-              {name}
-            </div>
+            >
+              <div
+                css={[tw`width[150px] pl-10 py-2 rounded shadow-md`, css`background: ${background};`]}>
+                {name}
+              </div>
+            </Drag>
           )
         }
         }

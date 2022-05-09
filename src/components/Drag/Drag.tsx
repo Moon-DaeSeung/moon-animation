@@ -1,5 +1,6 @@
 import React, { useImperativeHandle, useRef } from 'react'
 import Spring from '../Spring'
+import tw from 'twin.macro'
 import { useSpringApi } from '../Spring/useSpringApi'
 
 export type DragProps = {
@@ -9,10 +10,10 @@ export type DragProps = {
   onMouseDown?: (e: React.DragEvent<HTMLDivElement>) => void
   onMouseUp?: (e: React.DragEvent<HTMLDivElement>) => void
   onDragEnter?: (e: React.DragEvent<HTMLDivElement>) => void
-  onDragExit?: (e: React.DragEvent<HTMLDivElement>) => void
+  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void
 }
 
-const Drag = ({ children, type = 'reset', axis = 'both', onMouseDown, onMouseUp, onDragEnter, onDragExit }: DragProps, ref?: any) => {
+const Drag = ({ children, type = 'reset', axis = 'both', onMouseDown, onMouseUp, onDragEnter, onDragLeave }: DragProps, ref?: any) => {
   const childrenRef = useRef<HTMLElement | null>(null)
   useImperativeHandle(ref, () => childrenRef.current)
   const springApi = useSpringApi({ to: { x: 0, y: 0 } })
@@ -27,7 +28,9 @@ const Drag = ({ children, type = 'reset', axis = 'both', onMouseDown, onMouseUp,
     type === 'reset' && springApi.update({ x: 0, y: 0 })
   }
 
-  const handleDrag = ({ pageX, pageY }: React.DragEvent<HTMLDivElement>) => {
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.dropEffect = 'copy'
+    const { pageX, pageY } = e
     const [originX, originY] = selectedXYRef.current
     const [x, y] = [pageX - originX, pageY - originY]
     springApi.update({ x, y })
@@ -37,13 +40,15 @@ const Drag = ({ children, type = 'reset', axis = 'both', onMouseDown, onMouseUp,
     <div
       tw='relative'
       draggable
+      onDragEnd={handleDragEnd}
+      onDragOver={e => e.preventDefault()}
+      onDrop={e => e.preventDefault()}
       onDragStart={handleDragStart}
       onDrag={handleDrag}
-      onDragEnd={handleDragEnd}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onDragEnter={onDragEnter}
-      onDragExit={onDragExit}
+      onDragLeave={onDragLeave}
     >
       {React.cloneElement(children, {
         ref: (node: any) => { childrenRef.current = node },
@@ -61,7 +66,7 @@ const Drag = ({ children, type = 'reset', axis = 'both', onMouseDown, onMouseUp,
         springApi={springApi}
       >
         {({ x, y }) =>
-        <div tw=''>
+        <div>
           {React.cloneElement(children, {
             style: {
               ...children.props.style,
