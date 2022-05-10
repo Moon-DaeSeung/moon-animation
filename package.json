@@ -1,6 +1,6 @@
 {
   "name": "moon-animation",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -9,7 +9,7 @@
   "storybookPage": "https://moon-daeseung.github.io/moon-animation",
   "scripts": {
     "prepackage-deploy": "npm run package-build",
-    "package-deploy": "cp package.json dist/package.json && cd dist && npm publish",
+    "package-deploy": "npx cp-cli README.md dist/README.md && npx cp-cli package.json dist/package.json && cd dist && npm publish --access public",
     "package-build": "rollup -c",
     "start": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
@@ -63,6 +63,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@use-gesture/react": "^10.2.6"
+    "@use-gesture/react": "^10.2.6",
+    "cp-cli": "^2.0.0"
   }
 }
