@@ -134,6 +134,7 @@ export const Shuffle = () => {
           const { name, background } = item
           return (
             <Drag
+              axis='y'
               onDragEnter={() => shuffle(item)}
               onMouseDown={() => { selectedItemRef.current = item } }
               onMouseUp={() => { selectedItemRef.current = undefined }}
