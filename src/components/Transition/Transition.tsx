@@ -92,8 +92,7 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
   const { height: containerHeight } = containerRectRef.current
 
   return (
-    <div tw='relative'
-    >
+    <div tw='relative'>
       <div
         ref={containerRef}
         style={{
@@ -111,49 +110,37 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
           })
         )}
       </div>
-      <div
-        style={{
-          ...style,
-          boxSizing: 'border-box',
-          position: 'absolute',
-          display: 'block',
-          width: '100%',
-          height: '100%',
-          marginTop: `${-1 * containerHeight}px`
-        }}
-        css={customCss}
-      >
-        {springsApi && (
-          <Springs springsApi={springsApi} items={items} getItemId={getItemId}>
-            {(item, { x, y }, index) => {
-              const { width, height } = relativeRects[index] || { width: 0, height: 0 }
-              const children = renderFn(item, index)
-              return (
-              <div
-                style={{
-                  margin: 0,
-                  position: 'absolute',
-                  boxSizing: 'border-box',
+      {springsApi && (
+        <Springs springsApi={springsApi} items={items} getItemId={getItemId}>
+          {(item, { x, y }, index) => {
+            const { width, height } = relativeRects[index] || { width: 0, height: 0 }
+            const children = renderFn(item, index)
+            return (
+            <div
+              style={{
+                margin: 0,
+                boxSizing: 'border-box',
+                width: `${width}px`,
+                height: `${height}px`,
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`
+              }}
+            >
+              {React.cloneElement(children, {
+                style: {
+                  ...children.props.style,
                   width: `${width}px`,
-                  height: `${height}px`,
-                  top: '50%',
-                  left: '50%',
-                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`
-                }}
-              >
-                {React.cloneElement(children, {
-                  style: {
-                    ...children.props.style,
-                    width: `${width}px`,
-                    height: `${height}px`
-                  }
-                })}
-              </div>)
-            }}
-          </Springs>
-        )}
+                  height: `${height}px`
+                }
+              })}
+              </div>
+            )
+          }}
+        </Springs>
+      )}
       </div>
-    </div>
   )
 }
 
