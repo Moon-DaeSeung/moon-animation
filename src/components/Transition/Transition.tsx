@@ -128,9 +128,9 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
             {(item, { x, y }, index) => {
               const { width, height } = relativeRects[index] || { width: 0, height: 0 }
               const children = renderFn(item, index)
-              return React.cloneElement(children, {
-                style: {
-                  ...children.props.style,
+              return (
+              <div
+                style={{
                   margin: 0,
                   position: 'absolute',
                   boxSizing: 'border-box',
@@ -139,8 +139,16 @@ const Transition = <T, >({ children: renderFn, style, getItemId, items, customCs
                   top: '50%',
                   left: '50%',
                   transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`
-                }
-              })
+                }}
+              >
+                {React.cloneElement(children, {
+                  style: {
+                    ...children.props.style,
+                    width: `${width}px`,
+                    height: `${height}px`
+                  }
+                })}
+              </div>)
             }}
           </Springs>
         )}
