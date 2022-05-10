@@ -17,6 +17,14 @@ export class SpringApi<T> {
     this.springsApi.update((_: number) => springValue)
   }
 
+  onStart (func: () => void) {
+    this.springsApi.onStart = func
+  }
+
+  onRest (func: () => void) {
+    this.springsApi.onRest = func
+  }
+
   stop () {
     this.springsApi._stop()
   }
