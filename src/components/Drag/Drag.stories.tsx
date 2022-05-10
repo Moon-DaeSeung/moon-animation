@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ComponentMeta } from '@storybook/react'
 import tw from 'twin.macro'
 import { css } from '@emotion/react'
@@ -11,6 +11,7 @@ export default {
 } as ComponentMeta<typeof Drag>
 
 export const Primary = () => {
+  const [isDragEntered, setIsDragEntered] = useState(false)
   return (
     <div tw='height[50vh] bg-blue-200 flex justify-center items-center' >
       <Drag>
@@ -19,9 +20,11 @@ export const Primary = () => {
         </div>
       </Drag>
       <div
-        onDragEnter={() => console.log('drag entered')}
-        tw='absolute bg-red-200 px-10 py-5 rounded shadow-md right[30px]'>
-        도착지
+        onDragEnter={() => { setIsDragEntered(true); console.log('hi') }}
+        onDragLeave={() => setIsDragEntered(false)}
+        css={[tw`absolute bg-red-200 width[200px] flex justify-center font-bold py-5 rounded shadow-md right[30px]`, isDragEntered && tw`bg-blue-300`]}
+      >
+        {isDragEntered ? 'Hi!' : 'Drag over here!'}
       </div>
     </div>
   )
